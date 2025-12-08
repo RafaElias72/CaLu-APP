@@ -11,5 +11,9 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    proxy: {
+      '/webhook': 'http://localhost:5678',
+      '/webhook-test': 'http://localhost:5678',
+    },
   },
 })

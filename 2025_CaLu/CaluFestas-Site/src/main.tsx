@@ -17,13 +17,15 @@ import Carrinho from './pages/carrinho.tsx';
 import Redirecionamento from './pages/redirecionamento.tsx';
 import FAQ from './pages/FAQ.tsx';
 import ComprasRealizadas from './pages/comprasrealizadas.tsx';
-import ComprasRealizadasAdm from './pages/comprarrealizadasadm.tsx';
+import ComprasRealizadasAdm from './pages/comprarrealizadasadm.tsx'; // Renomeado para letra maiúscula
 import DetalhesDoProduto from './pages/detalhesdoproduto.tsx';
 
 import PrivateRoute from "./privateRoutes";
 import { AuthProvider } from './context/authContext.tsx';
 import { ToastContainer } from 'react-toastify';
 import ChatWidget from './components/ChatWidget.tsx';
+import PainelAdm from './pages/painelAdm.tsx';
+import PrivateRouteAdmin from './admRoutes.tsx';
 
 const router = createBrowserRouter([
     { path: "/", element: <Home /> },
@@ -31,7 +33,11 @@ const router = createBrowserRouter([
     { path: "/cadastro", element: <Cadastro /> },
     { path: "/login", element: <Login /> },
     { path: "/catalogo", element: <Catalago /> },
-    { path: "/cadastrarproduto", element: <CadastrarProduto /> },
+    { path: "/cadastrarproduto", element: <PrivateRouteAdmin>
+        <PrivateRoute>
+            <CadastrarProduto />
+        </PrivateRoute>
+    </PrivateRouteAdmin> },
     { path: "/esqueceusenha", element: <EsqueceuSenha /> },
     { path: "/cadastrarnovasenha", element: <CadastrarNovaSenha /> },
     { path: "/codigodeverificacao", element: <CodigoDeVerificacao /> },
@@ -39,7 +45,12 @@ const router = createBrowserRouter([
     { path: "/redirecionamento", element: <Redirecionamento /> },
     { path: "/FAQ", element: <FAQ /> },
     { path: "/comprasrealizadas", element: <PrivateRoute><ComprasRealizadas /></PrivateRoute> },
-    { path: "/comprasrealizadasadm", element: <PrivateRoute><ComprasRealizadasAdm /></PrivateRoute> },
+    { path: "/comprasrealizadasadm", element: <PrivateRouteAdmin>
+        <PrivateRoute><ComprasRealizadasAdm /></PrivateRoute>
+    </PrivateRouteAdmin> }, // Renomeado para letra maiúscula
+    { path: "/painelAdm", element: <PrivateRouteAdmin>
+        <PrivateRoute><PainelAdm /></PrivateRoute>
+    </PrivateRouteAdmin> },
     { path: "/detalhesdoproduto/:id", element: <DetalhesDoProduto /> },
 ]);
 

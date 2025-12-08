@@ -1,127 +1,204 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import NavBar from '../components/NavBar';
-import instagram1 from '../assets/foto 13.jpg';
-import instagram2 from '../assets/foto 11.jpg';
-import instagram3 from '../assets/foto 12.jpg';
-import { useAuth } from '../context/useAuth';
+import React, { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import NavBar from "../components/NavBar";
+import { useAuth } from "../context/useAuth";
 
+// Tipagens
 interface Item {
   _id: string;
   nome: string;
-  preco: number;
   quantidade: number;
 }
+
 interface Locacao {
   _id: string;
   nome: string;
   endereco: string;
-  email: string;
+  email?: string;
   data_entrega: string;
   data_retirada: string;
-  pagamento: string;
+  pagamento?: string;
   total: number;
   items: Item[];
-  estado: string; // exemplo: "pendente", "concluida"
+  estado: string;
 }
+
+// utilidades
+const formatDate = (s?: string) => {
+  if (!s) return "-";
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return s;
+  return d.toLocaleDateString("pt-BR");
+};
+
+const formatCurrency = (v: number) =>
+  new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(v);
+
+const getStatusBadge = (estado: string) => {
+  const e = estado.toLowerCase();
+  if (e.includes("concl") || e === "concluida") return "bg-green-100 text-green-800";
+  if (e.includes("analise") || e === "em analise") return "bg-yellow-100 text-yellow-800";
+  if (e.includes("recus") || e === "recusada") return "bg-red-100 text-red-800";
+  return "bg-gray-100 text-gray-800";
+};
+
+const SkeletonCard = () => (
+  <div className="animate-pulse bg-white rounded-2xl shadow-lg p-4">
+    <div className="h-4 bg-gray-200 rounded w-1/3 mb-3" />
+    <div className="h-3 bg-gray-200 rounded w-2/3 mb-2" />
+    <div className="h-20 bg-gray-200 rounded" />
+  </div>
+);
 
 const ComprasRealizadas: React.FC = () => {
   const [locacoes, setLocacoes] = useState<Locacao[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const { perfil } = useAuth();
-  const token = localStorage.getItem('token');
+
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   useEffect(() => {
-    axios.post<Locacao[]>('http://localhost:8080/api/locations/cliente', {"email": perfil?.email}, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-        }) // ajuste a URL conforme seu backend
-      .then((response) => {
-        setLocacoes(response.data);
-      })
-      .catch((error) => {
-        console.error('Erro ao buscar locações:', error);
-      })
-      .finally(() => {
+    if (!perfil?.email) return;
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.post<Locacao[]>(
+          "http://localhost:8080/api/locations/cliente",
+          { email: perfil.email },
+          { headers: token ? { Authorization: `Bearer ${token}` } : undefined }
+        );
+        setLocacoes(res.data || []);
+      } catch (err) {
+        console.error("Erro ao buscar locações:", err);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+    fetchData();
   }, [perfil?.email, token]);
 
+  // busca local
+  const [search, setSearch] = useState("");
+
+  const filtrados = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return locacoes.filter(
+      (l) =>
+        !q ||
+        l.nome.toLowerCase().includes(q) ||
+        l.endereco.toLowerCase().includes(q) ||
+        l.estado.toLowerCase().includes(q)
+    );
+  }, [locacoes, search]);
+
   return (
-    <>
+    <div className="min-h-screen bg-gray-50">
       <NavBar />
-      <div className="flex flex-col items-center bg-gray-100 w-full min-h-screen pt-6">
-        <h1 className="text-2xl font-bold mb-6 text-blue-900">Locações Realizadas</h1>
-        <div className="w-full max-w-2xl">
-          {loading ? (
-            <p className="text-center text-gray-600">Carregando...</p>
-          ) : locacoes.length === 0 ? (
-            <p className="text-center text-gray-600">Nenhuma locação realizada ainda.</p>
-          ) : (
-            locacoes.map((locacao) => (
-              <div key={locacao._id} className="bg-white rounded-lg shadow-md p-6 mb-4">
-                <div className="flex justify-between mb-2">
-                  <span className="font-semibold text-blue-900">Endereço:</span>
-                  <span>{locacao.endereco}</span>
+
+      <main className="max-w-6xl mx-auto px-4 py-10">
+        <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-extrabold text-gray-900">Minhas Locações</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Acompanhe aqui suas locações realizadas e o andamento delas.
+            </p>
+          </div>
+
+          <div className="relative w-full md:w-80">
+            <svg
+              className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
+              />
+            </svg>
+
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por nome, endereço ou estado..."
+              className="w-full pl-10 pr-3 py-2 rounded-full border border-gray-200 bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 transition"
+            />
+          </div>
+        </header>
+
+        {loading ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        ) : filtrados.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <svg className="w-24 h-24 text-gray-300 mb-4" fill="none" viewBox="0 0 64 64">
+              <rect x="8" y="20" width="48" height="28" rx="4" stroke="currentColor" strokeWidth="2" />
+            </svg>
+            <div className="text-gray-600">Nenhuma locação encontrada.</div>
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2">
+            {filtrados.map((loc) => (
+              <article
+                key={loc._id}
+                className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-2xl transform hover:-translate-y-1 transition"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">{loc.nome}</h2>
+                    <p className="text-sm text-gray-500 mt-1">{loc.endereco}</p>
+                  </div>
+
+                  <div className="text-sm text-right">
+                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(loc.estado)}`}>
+                      {loc.estado}
+                    </div>
+
+                    <div className="mt-3 font-semibold text-gray-900">{formatCurrency(loc.total)}</div>
+                    <div className="text-xs text-gray-400">Total</div>
+                  </div>
                 </div>
-                <div className="flex justify-between mb-2">
-                  <span className="font-semibold text-blue-900">Data de entrega:</span>
-                  <span>{locacao.data_entrega}</span>
+
+                <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 mb-4">
+                  <div>
+                    <div className="text-xs text-gray-500">Entrega</div>
+                    <div className="font-medium">{formatDate(loc.data_entrega)}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500">Devolução</div>
+                    <div className="font-medium">{formatDate(loc.data_retirada)}</div>
+                  </div>
                 </div>
-                <div className="flex justify-between mb-2">
-                  <span className="font-semibold text-blue-900">Data de retorno:</span>
-                  <span>{locacao.data_retirada}</span>
-                </div>
-                <div className="flex justify-between mb-2">
-                  <span className="font-semibold text-blue-900">Forma de pagamento:</span>
-                  <span>{locacao.pagamento}</span>
-                </div>
-                <div className="flex justify-between mb-2">
-                  <span className="font-semibold text-blue-900">Estado:</span>
-                  <span>{locacao.estado}</span>
-                </div>
-                <div className="mb-2">
-                  <span className="font-semibold text-blue-900">Itens:</span>
-                  <ul className="list-disc list-inside">
-                    {locacao.items.map((item, idx) => (
-                      <li key={idx}>
-                        {item.nome} - {item.quantidade} unidade{item.quantidade > 1 ? 's' : ''}
+
+                <div className="mb-4">
+                  <div className="font-semibold text-sm text-indigo-700 mb-2">Itens</div>
+                  <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                    {loc.items.map((it) => (
+                      <li key={it._id} className="flex justify-between">
+                        <span>{it.nome}</span>
+                        <span className="text-gray-500">{it.quantidade}x</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="flex justify-between">
-                  <span className="font-semibold text-blue-900">Total:</span>
-                  <span>R$ {locacao.total.toFixed(2)}</span>
+
+                <div className="text-sm text-gray-600">
+                  <strong>Pagamento:</strong> {loc.pagamento ?? "-"}
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-      {/* Rodapé */}
-      <div className="bg-blue-900 text-white w-full py-10">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-8">
-          <div>
-            <h3 className="text-xl font-bold mb-4">CaLu Festas e Eventos</h3>
-            <p>Organizamos eventos inesquecíveis! Entre em contato para transformar seu sonho em realidade.</p>
-            <p>📞 Telefone: (11) 1234-5678</p>
-            <p>📸: <a href="https://www.instagram.com/calu_conceitos" target="_blank" rel="noopener noreferrer" className="underline">@calu_conceitos</a></p>
+              </article>
+            ))}
           </div>
-          <div>
-            <a href="https://www.instagram.com/calu_conceitos" target="_blank" rel="noopener noreferrer">
-              <h3 className="text-xl font-bold mb-4">Instagram</h3>
-            </a>
-            <div className="grid grid-cols-3 gap-4">
-              <img src={instagram1} alt="Instagram 1" className="w-full h-auto rounded-md" />
-              <img src={instagram2} alt="Instagram 2" className="w-full h-auto rounded-md" />
-              <img src={instagram3} alt="Instagram 3" className="w-full h-auto rounded-md" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+        )}
+      </main>
+    </div>
   );
 };
 

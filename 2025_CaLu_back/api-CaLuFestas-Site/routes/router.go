@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	middle"github.com/Psnsilvino/CaluFestas-Site-api/middleware"
+	middle "github.com/Psnsilvino/CaluFestas-Site-api/middleware"
 )
 
 func SetupRouter() *gin.Engine {

@@ -36,9 +36,9 @@ const faqData = [
 
 const FAQ: React.FC = () => {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <NavBar />
-      <div className="flex flex-col items-center bg-gray-100 min-h-screen pt-10">
+      <div className="flex flex-col items-center bg-[#f9f5f0] min-h-screen pt-10">
         <div className="bg-white rounded-lg shadow-md p-8 max-w-2xl w-full">
           <h1 className="text-2xl font-bold text-blue-900 mb-6 text-center">Perguntas Frequentes (FAQ)</h1>
           <div className="space-y-6">
@@ -53,8 +53,10 @@ const FAQ: React.FC = () => {
 
         {/* Informações */}
       </div>
-        <Footer/>
-    </>
+        <div className="bg-[#f9f5f0]">
+          <Footer/>
+        </div>
+    </div>
   );
 };
 

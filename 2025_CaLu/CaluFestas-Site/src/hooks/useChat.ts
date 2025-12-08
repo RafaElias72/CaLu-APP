@@ -7,10 +7,8 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
-// Production Webhook URL
 const WEBHOOK_URL =
-  import.meta.env.VITE_N8N_WEBHOOK_URL || "/webhook/calu-chat";
-console.log("Using Webhook URL:", WEBHOOK_URL);
+  "/webhook/calu-chat";
 const STORAGE_KEY = "calu_chat_history";
 
 export function useChat() {

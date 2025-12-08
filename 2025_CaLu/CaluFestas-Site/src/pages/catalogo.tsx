@@ -132,7 +132,7 @@ const Catalago: React.FC = () => {
                   }}
                 >
                   <img
-                    src={product.imagem[0] || ""}
+                    src={Array.isArray(product.imagem) ? product.imagem[0] : product.imagem || ""}
                     alt={product.nome}
                     style={{
                       width: "100%",

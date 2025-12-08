@@ -20,22 +20,6 @@ type Product = {
 
 // ======= IMAGENS FALLBACK =======
 import mesa140 from "../assets/mesa140.jpeg";
-import cadeira1 from "../assets/cadeira1.jpeg";
-import conjuntopvc1 from "../assets/foto 12.jpg";
-
-// ======= CARD RELACIONADO =======
-type RelacionadoProps = { img: string; titulo: string; preco: string; href?: string };
-const ProdutoRelacionado: React.FC<RelacionadoProps> = ({ img, titulo, preco, href = "#" }) => (
-  <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
-    <img src={img} alt={titulo} className="h-40 w-full object-cover" />
-    <div className="p-4">
-      <a href={href} className="font-semibold text-gray-700">
-        {titulo}
-      </a>
-      <p className="text-[#c6a875] font-bold">{preco}</p>
-    </div>
-  </div>
-);
 
 // ======= PÁGINA =======
 const DetalhesDoProduto: React.FC = () => {
@@ -79,7 +63,7 @@ const DetalhesDoProduto: React.FC = () => {
     };
   }, [mainImage]);
 
-  // Buscar produtos (localStorage ou API)
+  // Buscar produtos
   React.useEffect(() => {
     const fetchProdutos = async () => {
       try {
@@ -98,7 +82,6 @@ const DetalhesDoProduto: React.FC = () => {
         if (encontrado) {
           setProduto(encontrado);
 
-          // imagem pode ser string OU string[]
           const firstImg = Array.isArray(encontrado.imagem)
             ? encontrado.imagem[0]
             : encontrado.imagem;
@@ -157,8 +140,6 @@ const DetalhesDoProduto: React.FC = () => {
         quantidadeemlocacao: 0
       }, quantidade);
 
-      // ❌ Não mostra toast aqui
-      // ✅ Passa state para o carrinho tostar uma única vez
       navigate("/carrinho", {
         state: {
           added: { id: produto._id, nome: produto.nome, quantidade },
@@ -180,7 +161,7 @@ const DetalhesDoProduto: React.FC = () => {
   }
 
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       {/* Cabeçalho */}
       <Navbar />
 
@@ -196,19 +177,20 @@ const DetalhesDoProduto: React.FC = () => {
 
       {/* Conteúdo principal */}
       <main className="px-4 pt-2 pb-12 bg-[#f9f5f0]">
-        <section className="text-center mb-8">
+        <section className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-[#1a3d39]">
             Detalhes do Produto
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-600 mt-2 text-sm sm:text-base">
             Confira as características e adicione ao carrinho
           </p>
         </section>
 
         {/* Card principal */}
-        <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-8 md:p-12 flex flex-col md:flex-row gap-12">
+        <div className="max-w-6xl mx-auto bg-white shadow-md md:shadow-xl rounded-2xl p-4 sm:p-6 md:p-12 flex flex-col md:flex-row gap-6 md:gap-12">
+          
           {/* Miniaturas */}
-          <div className="flex md:flex-col gap-3 order-2 md:order-1">
+          <div className="flex md:flex-col gap-3 overflow-x-auto px-1 order-2 md:order-1">
             {imagensProduto.length > 0 ? (
               imagensProduto.map((src, idx) => (
                 <img
@@ -216,7 +198,7 @@ const DetalhesDoProduto: React.FC = () => {
                   src={src}
                   alt={`thumb-${idx + 1}`}
                   onClick={() => setMainImage(src)}
-                  className={`w-20 h-20 object-cover rounded-lg shadow-lg border hover:opacity-80 transition cursor-pointer ${
+                  className={`w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 object-cover rounded-lg shadow border hover:opacity-80 transition cursor-pointer ${
                     mainImage === src ? "ring-2 ring-[#c6a875]" : ""
                   }`}
                 />
@@ -226,7 +208,7 @@ const DetalhesDoProduto: React.FC = () => {
                 src={mesa140}
                 alt="thumb-fallback"
                 onClick={() => setMainImage(mesa140)}
-                className={`w-20 h-20 object-cover rounded-lg shadow-lg border hover:opacity-80 transition cursor-pointer ${
+                className={`w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg shadow border hover:opacity-80 transition cursor-pointer ${
                   mainImage === mesa140 ? "ring-2 ring-[#c6a875]" : ""
                 }`}
               />
@@ -234,20 +216,18 @@ const DetalhesDoProduto: React.FC = () => {
           </div>
 
           {/* Imagem principal */}
-          <div className="order-1 md:order-2 md:mr-[70px]">
+          <div className="order-1 md:order-2 md:mr-[70px] flex justify-center">
             <img
               id="mainImage"
               src={mainImage || mesa140}
               alt={produto.nome}
-              className="w-full max-w-[450px] h-auto object-cover border rounded-xl shadow-md transition-transform duration-300 hover:scale-105"
+              className="w-full max-w-[380px] sm:max-w-[450px] h-auto object-cover border rounded-xl shadow-md"
             />
           </div>
 
           {/* Informações do produto */}
-          <div className="order-3 flex-1 bg-white p-6 border border-[#c6a875]/30 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 space-y-5">
+          <div className="order-3 flex-1 bg-white p-4 sm:p-6 border border-[#c6a875]/30 rounded-xl shadow-sm md:shadow-md transition-shadow duration-300 space-y-4 sm:space-y-5">
             <h2 className="text-2xl font-bold text-gray-900">{produto.nome}</h2>
-
-            {/* Dropdown de mesma categoria */}
 
             <p className="text-xl text-[#c6a875] font-bold mt-4">
               R$ {Number(produto.preco).toFixed(2)}
@@ -255,7 +235,7 @@ const DetalhesDoProduto: React.FC = () => {
 
             <div>
               <label className="block text-sm text-gray-600 mb-1">Descrição</label>
-              <div className="bg-gray-100 p-3 rounded-md text-gray-700">
+              <div className="bg-gray-100 p-3 rounded-md text-gray-700 text-sm sm:text-base">
                 {produto.descricao}
               </div>
             </div>
@@ -268,23 +248,23 @@ const DetalhesDoProduto: React.FC = () => {
                 </span>
               </p>
 
-              <div className="flex items-center gap-3 mt-2">
+              <div className="flex items-center gap-4 mt-3">
                 <button
                   aria-label="Diminuir"
                   onClick={() => setQuantidade((q) => Math.max(1, q - 1))}
-                  className="w-9 h-9 border rounded text-xl font-bold text-[#1a3d39] hover:bg-gray-100 transition"
+                  className="w-10 h-10 sm:w-12 sm:h-12 border rounded text-xl font-bold text-[#1a3d39] hover:bg-gray-100 transition"
                 >
                   −
                 </button>
 
-                <span className="text-lg font-medium w-6 text-center" aria-live="polite">
+                <span className="text-xl sm:text-2xl font-medium w-8 text-center" aria-live="polite">
                   {quantidade}
                 </span>
 
                 <button
                   aria-label="Aumentar"
                   onClick={() => setQuantidade((q) => Math.min(estoqueDisponivel, q + 1))}
-                  className="w-9 h-9 border rounded text-xl font-bold text-[#1a3d39] hover:bg-gray-100 transition"
+                  className="w-10 h-10 sm:w-12 sm:h-12 border rounded text-xl font-bold text-[#1a3d39] hover:bg-gray-100 transition"
                 >
                   +
                 </button>
@@ -294,33 +274,19 @@ const DetalhesDoProduto: React.FC = () => {
             <button
               onClick={adicionarAoCarrinho}
               disabled={quantidade < 1 || quantidade > estoqueDisponivel}
-              className="bg-[#c6a875] hover:bg-[#b39264] text-white px-6 py-3 rounded-lg w-full font-semibold shadow transition-all duration-300 disabled:opacity-50"
+              className="bg-[#c6a875] hover:bg-[#b39264] text-white px-4 py-3 sm:py-3 sm:px-6 rounded-lg w-full font-semibold text-sm sm:text-base shadow transition-all duration-300 disabled:opacity-50"
             >
               Adicionar ao carrinho
             </button>
           </div>
         </div>
-
-        {/* Produtos relacionados */}
-        <section className="mt-16 px-6 max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Você também pode gostar
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            <ProdutoRelacionado
-              img={conjuntopvc1}
-              titulo="Conjunto quadrado PVC"
-              preco="R$ 50,00"
-            />
-            <ProdutoRelacionado img={cadeira1} titulo="Cadeira Tiffany" preco="R$ 5,00" />
-            <ProdutoRelacionado img={mesa140} titulo="Mesa 1,20 m" preco="R$ 18,00" />
-          </div>
-        </section>
       </main>
 
       {/* Rodapé */}
-      <Footer />
-    </>
+      <div className="bg-[#f9f5f0]">
+        <Footer />
+      </div>
+    </div>
   );
 };
 

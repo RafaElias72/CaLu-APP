@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Home from "../pages/home"; // fundo
 
 const Register: React.FC = () => {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -18,9 +19,9 @@ const Register: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8080/api/clients/", formData);
+      await axios.post("http://localhost:8080/api/clients/", formData);
       toast.success("Registro realizado com sucesso!", { toastId: "RegistroBom" });
-      console.log(response.data);
+      navigate("/login")
     } catch (error) {
       console.error("Erro ao registrar:", error);
       toast.error("Erro ao registrar. Tente novamente.", { toastId: "RegistroRuim" });
